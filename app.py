@@ -25,16 +25,20 @@ class App_Mfa(QMainWindow, Ui_MainWindow):
             #Expresion regular a implementar
             if True:
                 totp = pyotp.TOTP(sharedKey)
-                codigo = str(totp.now())
-                self.lbl_totp.setText(codigo)
-                #tiempo para generar nuevo totp
-                time_remaining = totp.interval - datetime.datetime.now().timestamp() % totp.interval
-                #imprmir totp en lbl
-                self.lbl_time.setText(str(int(time_remaining)))
-                #No duplicar valores en la tabla o archivo
-                if not self.fn_buscar_registro(codigo, sharedKey):
-                    self.fn_insert_on_table(codigo, sharedKey, accountId)
-                    self.fn_guardar_datos()
+                #Control de errores
+                try:
+                    codigo = str(totp.now())
+                    self.lbl_totp.setText(codigo)
+                    #tiempo para generar nuevo totp
+                    time_remaining = totp.interval - datetime.datetime.now().timestamp() % totp.interval
+                    #imprmir totp en lbl
+                    self.lbl_time.setText(str(int(time_remaining)) + " s")
+                    #No duplicar valores en la tabla o archivo
+                    if not self.fn_buscar_registro(codigo, sharedKey):
+                        self.fn_insert_on_table(codigo, sharedKey, accountId)
+                        self.fn_guardar_datos()
+                except Exception as inst:
+                    self.lbl_totp.setText("Intenta con otro sharedKey")
             else:
                 #Mensaje de error cuando no se cumple con expresion regular
                 self.lbl_totp.setText("No has ingresado los campos requeridos")
@@ -50,7 +54,7 @@ class App_Mfa(QMainWindow, Ui_MainWindow):
         #insercion de datos
         self.tbw_hystoric.setItem(position, 0, QTableWidgetItem(str(datetime.datetime.now())))
         self.tbw_hystoric.setItem(position, 1, QTableWidgetItem(sharedKey))
-        self.tbw_hystoric.setItem(position, 2, QTableWidgetItem(accountid))
+        self.tbw_hystoric.setItem(position, 2, QTableWidgetItem("Acc-" + accountid))
         self.tbw_hystoric.setItem(position, 3, QTableWidgetItem(str(codigo)))
 
     def fn_insert_datos(self):
